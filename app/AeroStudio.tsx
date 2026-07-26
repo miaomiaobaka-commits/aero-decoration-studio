@@ -8,37 +8,12 @@ import {
   WandSparkles, X,
 } from "lucide-react";
 import type { Canvas as FabricCanvas, FabricObject } from "fabric";
+import { assetManifest } from "./assetManifest";
 
 type ToolTab = "frames" | "decorations" | "effects" | "background";
-type Sticker = { id: string; label: string; family: "water" | "nature" | "crystal" | "aero"; file: string };
+type Sticker = { id: string; label: string; file: string; width: number; height: number };
 
-const stickers: Sticker[] = [
-  { id: "dolphin-splash", label: "Dolphin splash", family: "water", file: "dolphin-splash.png" },
-  { id: "rainbow-horizon", label: "Rainbow horizon", family: "aero", file: "rainbow-horizon.png" },
-  { id: "pearl-bubbles", label: "Pearl bubbles", family: "water", file: "pearl-bubbles.png" },
-  { id: "ocean-wave", label: "Ocean wave", family: "water", file: "ocean-wave.png" },
-  { id: "aquarium-orb", label: "Aquarium orb", family: "crystal", file: "aquarium-orb.png" },
-  { id: "aero-player", label: "Aero player", family: "aero", file: "aero-player.png" },
-  { id: "glass-mp3", label: "Glass MP3", family: "aero", file: "glass-mp3.png" },
-  { id: "music-bubbles", label: "Music bubbles", family: "crystal", file: "music-bubbles.png" },
-  { id: "crystal-disc", label: "Crystal disc", family: "aero", file: "crystal-disc.png" },
-  { id: "glass-gamepad", label: "Glass gamepad", family: "aero", file: "glass-gamepad.png" },
-  { id: "city-fishbowl", label: "City fishbowl", family: "crystal", file: "city-fishbowl.png" },
-  { id: "jumping-dolphin", label: "Jumping dolphin", family: "water", file: "jumping-dolphin.png" },
-  { id: "sky-porthole", label: "Sky porthole", family: "crystal", file: "sky-porthole.png" },
-  { id: "aqua-platform", label: "Aqua platform", family: "crystal", file: "aqua-platform.png" },
-  { id: "bubble-cloud", label: "Bubble cloud", family: "water", file: "bubble-cloud.png" },
-  { id: "garden-pod", label: "Garden pod", family: "nature", file: "garden-pod.png" },
-  { id: "fresh-sprout", label: "Fresh sprout", family: "nature", file: "fresh-sprout.png" },
-  { id: "green-globe", label: "Green globe", family: "nature", file: "green-globe.png" },
-  { id: "leaf-water-ribbon", label: "Leaf water", family: "nature", file: "leaf-water-ribbon.png" },
-  { id: "water-crescent", label: "Water crescent", family: "water", file: "water-crescent.png" },
-  { id: "blue-bubble-pack", label: "Blue bubbles", family: "water", file: "blue-bubble-pack.png" },
-  { id: "clean-city-meadow", label: "Clean city", family: "nature", file: "clean-city-meadow.png" },
-  { id: "sunflower-bouquet", label: "Sunflowers", family: "nature", file: "sunflower-bouquet.png" },
-  { id: "daisy-meadow", label: "Daisy meadow", family: "nature", file: "daisy-meadow.png" },
-  { id: "aero-laptop", label: "Aero laptop", family: "aero", file: "aero-laptop.png" },
-];
+const stickers: Sticker[] = assetManifest.decor.map(item => ({ ...item }));
 
 function GlassButton({ children, primary, className = "", onClick }: {
   children: React.ReactNode; primary?: boolean; className?: string; onClick?: () => void;
@@ -53,6 +28,7 @@ function WindowControls() {
 }
 
 export default function AeroStudio() {
+  const [lang, setLang] = useState<"en" | "zh">("en");
   const [screen, setScreen] = useState<"home" | "editor">("home");
   const [activeTab, setActiveTab] = useState<ToolTab>("decorations");
   const [selected, setSelected] = useState<FabricObject | null>(null);
@@ -96,7 +72,7 @@ export default function AeroStudio() {
     const canvas = fabricRef.current;
     if (!canvas) return;
     const { FabricImage } = await import("fabric");
-    const asset = await FabricImage.fromURL(`/decors/${sticker.file}`, { crossOrigin: "anonymous" });
+    const asset = await FabricImage.fromURL(sticker.file, { crossOrigin: "anonymous" });
     const maxSize = 270;
     const scale = Math.min(maxSize / (asset.width || 1), maxSize / (asset.height || 1), 1);
     asset.set({
@@ -153,6 +129,24 @@ export default function AeroStudio() {
     canvas.add(item); canvas.setActiveObject(item); canvas.requestRenderAll(); syncSelection(item);
     */
   }, []);
+
+  const addImageFrame = async (file: string) => {
+    const canvas = fabricRef.current; if (!canvas) return;
+    const { FabricImage } = await import("fabric");
+    const frame = await FabricImage.fromURL(file, { crossOrigin: "anonymous" });
+    const scale = Math.min(650 / (frame.width || 1), 650 / (frame.height || 1));
+    frame.set({left:360,top:360,originX:"center",originY:"center",scaleX:scale,scaleY:scale});
+    canvas.add(frame); canvas.setActiveObject(frame); canvas.bringObjectToFront(frame); canvas.requestRenderAll(); syncSelection(frame);
+  };
+
+  const applyLibraryBackground = async (file: string) => {
+    const canvas = fabricRef.current; if (!canvas) return;
+    const { FabricImage } = await import("fabric");
+    const background = await FabricImage.fromURL(file, { crossOrigin: "anonymous" });
+    const scale = Math.max(720 / (background.width || 1), 720 / (background.height || 1));
+    background.set({left:360,top:360,originX:"center",originY:"center",scaleX:scale,scaleY:scale,selectable:false,evented:false});
+    canvas.backgroundImage = background; canvas.requestRenderAll();
+  };
 
   const addFrame = useCallback(async (kind: "glass" | "gradient" | "rounded" | "water" | "chrome" | "corners" = "glass") => {
     const canvas = fabricRef.current;
@@ -239,28 +233,30 @@ export default function AeroStudio() {
     link.click();
   };
   const clearCanvas = () => { fabricRef.current?.clear(); fabricRef.current?.set({ backgroundColor: "rgba(255,255,255,0)" }); setHasImage(false); setSelected(null); };
+  const tr = (english: string, chinese: string) => lang === "zh" ? chinese : english;
 
   if (screen === "home") return <main className="desktop home-screen">
     <div className="moving-cloud cloud-one" /><div className="moving-cloud cloud-two" />
     <div className="desktop-icons">
-      <div><span>🖼️</span>My Pictures</div><div><span>🗑️</span>Recycle Bin</div>
+      <button className="desktop-shortcut"><span className="win7-picture-icon"><i/><i/></span>{tr("Pictures", "图片")}</button>
+      <button className="desktop-shortcut"><span className="win7-bin-icon"><i/><i/><i/></span>{tr("Recycle Bin", "回收站")}</button>
     </div>
     <section className="home-window aero-window">
-      <header className="titlebar"><div className="app-gem"><Aperture size={20}/></div><span>Aero Decoration Studio</span><WindowControls /></header>
+      <header className="titlebar home-titlebar"><div className="app-gem"><Aperture size={20}/></div><span>Aero Decoration Studio</span><div className="language-switch"><button className={lang==="zh"?"active":""} onClick={()=>setLang("zh")}>中文</button><button className={lang==="en"?"active":""} onClick={()=>setLang("en")}>EN</button></div><WindowControls /></header>
       <div className="home-content">
         <div className="brand-orb"><div><Sparkles size={38}/><b>AERO</b></div></div>
-        <p className="eyebrow">WELCOME TO YOUR CREATIVE SPACE</p>
+        <p className="eyebrow">{tr("WELCOME TO YOUR CREATIVE SPACE", "欢迎来到你的创意空间")}</p>
         <h1>Aero Decoration<br/><span>Studio</span></h1>
-        <p className="subtitle">Bring your photos to life with crystal frames,<br/>dreamy details and a touch of 2009 magic.</p>
+        <p className="subtitle">{tr("Bring your photos to life with crystal frames,", "用水晶边框与梦幻装饰唤醒你的照片，")}<br/>{tr("dreamy details and a touch of 2009 magic.", "重现 2009 年的数字魔法。")}</p>
         <div className="home-actions">
-          <GlassButton primary onClick={() => setScreen("editor")}><WandSparkles size={18}/> Create Decoration</GlassButton>
-          <GlassButton onClick={() => { setScreen("editor"); setTimeout(() => fileInput.current?.click(), 500); }}><Upload size={18}/> Upload Image</GlassButton>
+          <GlassButton primary onClick={() => setScreen("editor")}><WandSparkles size={18}/> {tr("Create Decoration", "开始创作")}</GlassButton>
+          <GlassButton onClick={() => { setScreen("editor"); setTimeout(() => fileInput.current?.click(), 500); }}><Upload size={18}/> {tr("Upload Image", "上传图片")}</GlassButton>
         </div>
-        <button className="gallery-link" onClick={() => setScreen("editor")}><FolderOpen size={17}/> Open My Gallery <span>›</span></button>
+        <button className="gallery-link" onClick={() => setScreen("editor")}><FolderOpen size={17}/> {tr("Open My Gallery", "打开我的图库")} <span>›</span></button>
       </div>
-      <footer className="window-status"><span className="online-dot"/> Ready to create <span>Aero Studio v1.0</span></footer>
+      <footer className="window-status"><span className="online-dot"/> {tr("Ready to create", "准备就绪")} <span>Aero Studio v1.0</span></footer>
     </section>
-    <div className="taskbar"><button className="start-orb">⊞</button><div className="task-divider"/><button className="task-app"><Aperture size={22}/></button><div className="tray">⌃　🔊　📶　 <b>10:24<br/><small>7/26/2026</small></b></div></div>
+    <div className="taskbar"><button className="start-orb" aria-label={tr("Start","开始")}><i/><i/><i/><i/></button><div className="task-divider"/><button className="task-app"><Aperture size={22}/></button><div className="tray">⌃　🔊　📶　 <b>10:24<br/><small>7/26/2026</small></b></div></div>
   </main>;
 
   return <main className="desktop editor-screen">
@@ -268,22 +264,22 @@ export default function AeroStudio() {
     <section className="editor-window aero-window">
       <header className="titlebar">
         <button className="back-btn" onClick={() => setScreen("home")}><ArrowLeft size={17}/></button>
-        <div className="app-gem"><Aperture size={18}/></div><span>Aero Decoration Studio</span><WindowControls />
+        <div className="app-gem"><Aperture size={18}/></div><span>Aero Decoration Studio</span><div className="editor-language"><button onClick={()=>setLang(lang==="en"?"zh":"en")}>{lang==="en"?"中文":"EN"}</button></div><WindowControls />
       </header>
       <div className="menubar"><button>File <ChevronDown size={11}/></button><button>Edit <ChevronDown size={11}/></button><button>View <ChevronDown size={11}/></button><span/><button><Settings2 size={14}/> Preferences</button></div>
       <div className="editor-topbar">
         <div className="doc-title"><Aperture size={22}/><div><b>{imageName}</b><small>1080 × 1080 px · Transparent PNG</small></div></div>
         <div className="history"><button title="Undo"><RotateCcw size={16}/></button><button title="Redo"><Redo2 size={16}/></button></div>
-        <GlassButton onClick={() => fileInput.current?.click()}><ImagePlus size={16}/> Upload</GlassButton>
-        <GlassButton primary onClick={exportPNG}><Download size={16}/> Export PNG</GlassButton>
+        <GlassButton onClick={() => fileInput.current?.click()}><ImagePlus size={16}/> {tr("Upload","上传")}</GlassButton>
+        <GlassButton primary onClick={exportPNG}><Download size={16}/> {tr("Export PNG","导出 PNG")}</GlassButton>
       </div>
       <div className="workspace">
         <aside className="asset-panel">
           <div className="panel-tabs">
-            <button className={activeTab==="frames"?"active":""} onClick={()=>setActiveTab("frames")}><Layers3/>Frames</button>
-            <button className={activeTab==="decorations"?"active":""} onClick={()=>setActiveTab("decorations")}><Sparkles/>Decor</button>
-            <button className={activeTab==="effects"?"active":""} onClick={()=>setActiveTab("effects")}><WandSparkles/>Effects</button>
-            <button className={activeTab==="background"?"active":""} onClick={()=>setActiveTab("background")}><Cloud/>Background</button>
+            <button className={activeTab==="frames"?"active":""} onClick={()=>setActiveTab("frames")}><Layers3/>{tr("Frames","边框")}</button>
+            <button className={activeTab==="decorations"?"active":""} onClick={()=>setActiveTab("decorations")}><Sparkles/>{tr("Decor","装饰")}</button>
+            <button className={activeTab==="effects"?"active":""} onClick={()=>setActiveTab("effects")}><WandSparkles/>{tr("Effects","效果")}</button>
+            <button className={activeTab==="background"?"active":""} onClick={()=>setActiveTab("background")}><Cloud/>{tr("Background","背景")}</button>
           </div>
           <div className="asset-body">
             <div className="panel-heading"><div><b>{activeTab === "frames" ? "Aero Frames" : activeTab === "decorations" ? "Decorations" : activeTab === "effects" ? "Photo Effects" : "Background"}</b><small>Click or drag onto the canvas</small></div><button><ChevronDown/></button></div>
@@ -294,6 +290,7 @@ export default function AeroStudio() {
               <button onClick={()=>addFrame("water")}><span className="frame-sample water"/><b>Aqua drops</b><small>Glossy liquid corners</small></button>
               <button onClick={()=>addFrame("chrome")}><span className="frame-sample chrome"/><b>Vista chrome</b><small>Bright media-player rim</small></button>
               <button onClick={()=>addFrame("corners")}><span className="frame-sample corners"/><b>Crystal corners</b><small>Open clean composition</small></button>
+              {assetManifest.frame.map(frame=><button className="image-asset-card" key={frame.id} onClick={()=>addImageFrame(frame.file)}><img src={frame.file} alt=""/><b>{frame.label}</b><small>{tr("Image frame","图片边框")}</small></button>)}
             </div> : activeTab === "effects" ? <div className="quick-effects">
               <button onClick={()=>applyImageEffect("dream")}><i className="effect-preview dream"/>Dreamy bloom</button>
               <button onClick={()=>applyImageEffect("clean")}><i className="effect-preview crisp"/>Clean vivid</button>
@@ -306,8 +303,9 @@ export default function AeroStudio() {
               <button onClick={()=>setCanvasBackground("meadow")}><i className="green"/>Clean meadow</button>
               <button onClick={()=>setCanvasBackground("pearl")}><i className="pearl"/>Pearl interior</button>
               <button onClick={()=>setCanvasBackground("aqua")}><i className="aqua-bg"/>Underwater blue</button>
+              {assetManifest.background.map(background=><button className="background-asset-card" key={background.id} onClick={()=>applyLibraryBackground(background.file)}><img src={background.file} alt=""/>{background.label}</button>)}
             </div> : <div className="sticker-grid">
-              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><img className="decor-image" src={`/decors/${s.file}`} alt=""/><small>{s.label}</small></button>)}
+              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><img className="decor-image" src={s.file} alt=""/><small>{s.label}</small></button>)}
             </div>}
           </div>
         </aside>
