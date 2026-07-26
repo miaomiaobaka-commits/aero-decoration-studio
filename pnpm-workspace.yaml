@@ -1,2 +1,6 @@
 onlyBuiltDependencies:
   - canvas
+  - esbuild
+  - sharp
+  - unrs-resolver
+  - workerd
