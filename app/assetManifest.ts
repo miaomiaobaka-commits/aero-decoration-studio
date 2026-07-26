@@ -2,24 +2,24 @@ export const assetManifest = {
   "decor": [
     {
       "id": "decor-001",
-      "label": "345",
+      "label": "Decor 01",
       "file": "/decors/decor-001.webp",
-      "width": 720,
-      "height": 448
+      "width": 208,
+      "height": 277
     },
     {
       "id": "decor-002",
-      "label": "aerfaew",
+      "label": "Decor 02",
       "file": "/decors/decor-002.webp",
-      "width": 323,
-      "height": 433
+      "width": 900,
+      "height": 900
     },
     {
       "id": "decor-003",
-      "label": "c",
+      "label": "Decor 03",
       "file": "/decors/decor-003.webp",
-      "width": 208,
-      "height": 277
+      "width": 900,
+      "height": 900
     },
     {
       "id": "decor-004",
@@ -117,7 +117,7 @@ export const assetManifest = {
       "label": "Decor 17",
       "file": "/decors/decor-017.webp",
       "width": 900,
-      "height": 900
+      "height": 600
     },
     {
       "id": "decor-018",
@@ -131,7 +131,7 @@ export const assetManifest = {
       "label": "Decor 19",
       "file": "/decors/decor-019.webp",
       "width": 900,
-      "height": 600
+      "height": 900
     },
     {
       "id": "decor-020",
@@ -222,7 +222,7 @@ export const assetManifest = {
       "label": "Decor 32",
       "file": "/decors/decor-032.webp",
       "width": 900,
-      "height": 900
+      "height": 600
     },
     {
       "id": "decor-033",
@@ -250,21 +250,21 @@ export const assetManifest = {
       "label": "Decor 36",
       "file": "/decors/decor-036.webp",
       "width": 900,
-      "height": 600
+      "height": 900
     },
     {
       "id": "decor-037",
       "label": "Decor 37",
       "file": "/decors/decor-037.webp",
       "width": 900,
-      "height": 900
+      "height": 600
     },
     {
       "id": "decor-038",
       "label": "Decor 38",
       "file": "/decors/decor-038.webp",
       "width": 900,
-      "height": 900
+      "height": 600
     },
     {
       "id": "decor-039",
@@ -285,7 +285,7 @@ export const assetManifest = {
       "label": "Decor 41",
       "file": "/decors/decor-041.webp",
       "width": 900,
-      "height": 600
+      "height": 900
     },
     {
       "id": "decor-042",
@@ -313,21 +313,21 @@ export const assetManifest = {
       "label": "Decor 45",
       "file": "/decors/decor-045.webp",
       "width": 900,
-      "height": 900
+      "height": 600
     },
     {
       "id": "decor-046",
       "label": "Decor 46",
       "file": "/decors/decor-046.webp",
       "width": 900,
-      "height": 600
+      "height": 900
     },
     {
       "id": "decor-047",
       "label": "Decor 47",
       "file": "/decors/decor-047.webp",
       "width": 900,
-      "height": 600
+      "height": 900
     },
     {
       "id": "decor-048",
@@ -375,7 +375,7 @@ export const assetManifest = {
       "id": "decor-054",
       "label": "Decor 54",
       "file": "/decors/decor-054.webp",
-      "width": 900,
+      "width": 600,
       "height": 900
     },
     {
@@ -389,7 +389,7 @@ export const assetManifest = {
       "id": "decor-056",
       "label": "Decor 56",
       "file": "/decors/decor-056.webp",
-      "width": 600,
+      "width": 900,
       "height": 900
     },
     {
@@ -417,211 +417,211 @@ export const assetManifest = {
       "id": "decor-060",
       "label": "Decor 60",
       "file": "/decors/decor-060.webp",
-      "width": 900,
-      "height": 900
+      "width": 379,
+      "height": 369
     },
     {
       "id": "decor-061",
       "label": "Decor 61",
       "file": "/decors/decor-061.webp",
-      "width": 900,
-      "height": 900
-    },
-    {
-      "id": "decor-062",
-      "label": "d",
-      "file": "/decors/decor-062.webp",
-      "width": 379,
-      "height": 369
-    },
-    {
-      "id": "decor-063",
-      "label": "dawsd",
-      "file": "/decors/decor-063.webp",
       "width": 362,
       "height": 411
     },
     {
-      "id": "decor-064",
-      "label": "ddd",
-      "file": "/decors/decor-064.webp",
+      "id": "decor-062",
+      "label": "Decor 62",
+      "file": "/decors/decor-062.webp",
       "width": 365,
       "height": 425
     },
     {
-      "id": "decor-065",
-      "label": "e",
-      "file": "/decors/decor-065.webp",
+      "id": "decor-063",
+      "label": "Decor 63",
+      "file": "/decors/decor-063.webp",
       "width": 438,
       "height": 354
     },
     {
-      "id": "decor-066",
-      "label": "f",
-      "file": "/decors/decor-066.webp",
+      "id": "decor-064",
+      "label": "Decor 64",
+      "file": "/decors/decor-064.webp",
       "width": 351,
       "height": 377
     },
     {
-      "id": "decor-067",
-      "label": "g",
-      "file": "/decors/decor-067.webp",
+      "id": "decor-065",
+      "label": "Decor 65",
+      "file": "/decors/decor-065.webp",
       "width": 373,
       "height": 321
     },
     {
-      "id": "decor-068",
-      "label": "h",
-      "file": "/decors/decor-068.webp",
+      "id": "decor-066",
+      "label": "Decor 66",
+      "file": "/decors/decor-066.webp",
       "width": 187,
       "height": 161
     },
     {
-      "id": "decor-069",
-      "label": "i",
-      "file": "/decors/decor-069.webp",
+      "id": "decor-067",
+      "label": "Decor 67",
+      "file": "/decors/decor-067.webp",
       "width": 361,
       "height": 350
     },
     {
-      "id": "decor-070",
-      "label": "Decor 70",
-      "file": "/decors/decor-070.webp",
+      "id": "decor-068",
+      "label": "Decor 68",
+      "file": "/decors/decor-068.webp",
       "width": 773,
       "height": 900
     },
     {
-      "id": "decor-071",
-      "label": "Decor 71",
-      "file": "/decors/decor-071.webp",
+      "id": "decor-069",
+      "label": "Decor 69",
+      "file": "/decors/decor-069.webp",
       "width": 787,
       "height": 900
     },
     {
+      "id": "decor-070",
+      "label": "Decor 70",
+      "file": "/decors/decor-070.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "decor-071",
+      "label": "Decor 71",
+      "file": "/decors/decor-071.png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
       "id": "decor-072",
       "label": "Decor 72",
-      "file": "/decors/decor-072.webp",
-      "width": 804,
-      "height": 900
+      "file": "/decors/decor-072.png",
+      "width": 1024,
+      "height": 1024
     },
     {
       "id": "decor-073",
       "label": "Decor 73",
-      "file": "/decors/decor-073.webp",
-      "width": 624,
-      "height": 900
+      "file": "/decors/decor-073.png",
+      "width": 1024,
+      "height": 1536
     },
     {
       "id": "decor-074",
-      "label": "j",
+      "label": "Decor 74",
       "file": "/decors/decor-074.webp",
-      "width": 814,
-      "height": 345
-    },
-    {
-      "id": "decor-075",
-      "label": "k",
-      "file": "/decors/decor-075.webp",
-      "width": 733,
-      "height": 346
-    },
-    {
-      "id": "decor-076",
-      "label": "l",
-      "file": "/decors/decor-076.webp",
       "width": 311,
       "height": 381
     },
     {
-      "id": "decor-077",
-      "label": "lkl",
-      "file": "/decors/decor-077.webp",
+      "id": "decor-075",
+      "label": "Decor 75",
+      "file": "/decors/decor-075.webp",
       "width": 587,
       "height": 603
     },
     {
-      "id": "decor-078",
-      "label": "m",
-      "file": "/decors/decor-078.webp",
+      "id": "decor-076",
+      "label": "Decor 76",
+      "file": "/decors/decor-076.webp",
       "width": 346,
       "height": 253
     },
     {
-      "id": "decor-079",
-      "label": "n",
-      "file": "/decors/decor-079.webp",
+      "id": "decor-077",
+      "label": "Decor 77",
+      "file": "/decors/decor-077.webp",
       "width": 644,
       "height": 235
     },
     {
-      "id": "decor-080",
-      "label": "o",
-      "file": "/decors/decor-080.webp",
+      "id": "decor-078",
+      "label": "Decor 78",
+      "file": "/decors/decor-078.webp",
+      "width": 323,
+      "height": 433
+    },
+    {
+      "id": "decor-079",
+      "label": "Decor 79",
+      "file": "/decors/decor-079.webp",
       "width": 209,
       "height": 153
     },
     {
-      "id": "decor-081",
-      "label": "p",
-      "file": "/decors/decor-081.webp",
+      "id": "decor-080",
+      "label": "Decor 80",
+      "file": "/decors/decor-080.webp",
       "width": 235,
       "height": 297
     },
     {
-      "id": "decor-082",
-      "label": "q",
-      "file": "/decors/decor-082.webp",
+      "id": "decor-081",
+      "label": "Decor 81",
+      "file": "/decors/decor-081.webp",
       "width": 417,
       "height": 332
     },
     {
-      "id": "decor-083",
-      "label": "r",
-      "file": "/decors/decor-083.webp",
+      "id": "decor-082",
+      "label": "Decor 82",
+      "file": "/decors/decor-082.webp",
       "width": 822,
       "height": 309
     },
     {
-      "id": "decor-084",
-      "label": "sd",
-      "file": "/decors/decor-084.webp",
+      "id": "decor-083",
+      "label": "Decor 83",
+      "file": "/decors/decor-083.webp",
       "width": 283,
       "height": 409
     },
     {
-      "id": "decor-085",
-      "label": "sss",
-      "file": "/decors/decor-085.webp",
+      "id": "decor-084",
+      "label": "Decor 84",
+      "file": "/decors/decor-084.webp",
       "width": 314,
       "height": 439
     },
     {
-      "id": "decor-086",
-      "label": "wewqa",
-      "file": "/decors/decor-086.webp",
+      "id": "decor-085",
+      "label": "Decor 85",
+      "file": "/decors/decor-085.webp",
       "width": 385,
       "height": 417
     },
     {
-      "id": "decor-087",
-      "label": "图层 1",
-      "file": "/decors/decor-087.webp",
+      "id": "decor-086",
+      "label": "Decor 86",
+      "file": "/decors/decor-086.webp",
       "width": 435,
       "height": 202
     },
     {
-      "id": "decor-088",
-      "label": "图层 1;",
-      "file": "/decors/decor-088.webp",
+      "id": "decor-087",
+      "label": "Decor 87",
+      "file": "/decors/decor-087.webp",
       "width": 900,
       "height": 879
     },
     {
-      "id": "decor-089",
-      "label": "图层 2",
-      "file": "/decors/decor-089.webp",
+      "id": "decor-088",
+      "label": "Decor 88",
+      "file": "/decors/decor-088.webp",
       "width": 306,
       "height": 406
+    },
+    {
+      "id": "decor-089",
+      "label": "Decor 89",
+      "file": "/decors/decor-089.webp",
+      "width": 720,
+      "height": 448
     }
   ],
   "frame": [
@@ -641,14 +641,14 @@ export const assetManifest = {
     },
     {
       "id": "frame-003",
-      "label": "ij",
+      "label": "Frame 03",
       "file": "/frames/frame-003.webp",
       "width": 1024,
       "height": 887
     },
     {
       "id": "frame-004",
-      "label": "ikik",
+      "label": "Frame 04",
       "file": "/frames/frame-004.webp",
       "width": 320,
       "height": 705
@@ -683,21 +683,21 @@ export const assetManifest = {
     },
     {
       "id": "frame-009",
-      "label": "pl",
+      "label": "Frame 09",
       "file": "/frames/frame-009.webp",
       "width": 512,
       "height": 479
     },
     {
       "id": "frame-010",
-      "label": "变",
+      "label": "Frame 10",
       "file": "/frames/frame-010.webp",
       "width": 1005,
       "height": 1024
     },
     {
       "id": "frame-011",
-      "label": "边框",
+      "label": "Frame 11",
       "file": "/frames/frame-011.webp",
       "width": 603,
       "height": 367

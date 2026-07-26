@@ -35,9 +35,12 @@ export default function AeroStudio() {
   const [opacity, setOpacity] = useState(100);
   const [rotation, setRotation] = useState(0);
   const [radius, setRadius] = useState(36);
-  const [borderWidth, setBorderWidth] = useState(12);
+  const [shadowAmount, setShadowAmount] = useState(0);
+  const [edgeFade, setEdgeFade] = useState(0);
   const [zoom, setZoom] = useState(67);
-  const [imageName, setImageName] = useState("Untitled Decoration");
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [canvasWidth, setCanvasWidth] = useState(1080);
+  const [canvasHeight, setCanvasHeight] = useState(1080);
   const [hasImage, setHasImage] = useState(false);
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<FabricCanvas | null>(null);
@@ -49,7 +52,7 @@ export default function AeroStudio() {
     import("fabric").then(({ Canvas }) => {
       if (!active || !canvasElement.current) return;
       const canvas = new Canvas(canvasElement.current, {
-        width: 720, height: 720, preserveObjectStacking: true, backgroundColor: "rgba(255,255,255,0)",
+        width: canvasWidth, height: canvasHeight, preserveObjectStacking: true, backgroundColor: "rgba(255,255,255,0)",
       });
       canvas.on("selection:created", (e) => syncSelection(e.selected?.[0] ?? null));
       canvas.on("selection:updated", (e) => syncSelection(e.selected?.[0] ?? null));
@@ -58,7 +61,7 @@ export default function AeroStudio() {
       fabricRef.current = canvas;
     });
     return () => { active = false; fabricRef.current?.dispose(); fabricRef.current = null; };
-  }, [screen]);
+  }, [screen, canvasWidth, canvasHeight]);
 
   const syncSelection = (obj: FabricObject | null) => {
     setSelected(obj);
@@ -68,9 +71,10 @@ export default function AeroStudio() {
     }
   };
 
-  const addSticker = useCallback(async (sticker: Sticker, x = 360, y = 360) => {
+  const addSticker = useCallback(async (sticker: Sticker, x?: number, y?: number) => {
     const canvas = fabricRef.current;
     if (!canvas) return;
+    x ??= canvas.getWidth() / 2; y ??= canvas.getHeight() / 2;
     const { FabricImage } = await import("fabric");
     const asset = await FabricImage.fromURL(sticker.file, { crossOrigin: "anonymous" });
     const maxSize = 270;
@@ -134,8 +138,9 @@ export default function AeroStudio() {
     const canvas = fabricRef.current; if (!canvas) return;
     const { FabricImage } = await import("fabric");
     const frame = await FabricImage.fromURL(file, { crossOrigin: "anonymous" });
-    const scale = Math.min(650 / (frame.width || 1), 650 / (frame.height || 1));
-    frame.set({left:360,top:360,originX:"center",originY:"center",scaleX:scale,scaleY:scale});
+    const maxSize = Math.min(canvas.getWidth(), canvas.getHeight()) * .94;
+    const scale = Math.min(maxSize / (frame.width || 1), maxSize / (frame.height || 1));
+    frame.set({left:canvas.getWidth()/2,top:canvas.getHeight()/2,originX:"center",originY:"center",scaleX:scale,scaleY:scale});
     canvas.add(frame); canvas.setActiveObject(frame); canvas.bringObjectToFront(frame); canvas.requestRenderAll(); syncSelection(frame);
   };
 
@@ -143,8 +148,8 @@ export default function AeroStudio() {
     const canvas = fabricRef.current; if (!canvas) return;
     const { FabricImage } = await import("fabric");
     const background = await FabricImage.fromURL(file, { crossOrigin: "anonymous" });
-    const scale = Math.max(720 / (background.width || 1), 720 / (background.height || 1));
-    background.set({left:360,top:360,originX:"center",originY:"center",scaleX:scale,scaleY:scale,selectable:false,evented:false});
+    const scale = Math.max(canvas.getWidth() / (background.width || 1), canvas.getHeight() / (background.height || 1));
+    background.set({left:canvas.getWidth()/2,top:canvas.getHeight()/2,originX:"center",originY:"center",scaleX:scale,scaleY:scale,selectable:false,evented:false});
     canvas.backgroundImage = background; canvas.requestRenderAll();
   };
 
@@ -155,7 +160,7 @@ export default function AeroStudio() {
     if (kind === "corners") {
       const corners = [[-294,-294,0],[294,-294,90],[294,294,180],[-294,294,270]].map(([left,top,angle]) =>
         new Path("M 0 92 L 0 24 Q 0 0 24 0 L 92 0",{left,top,angle,fill:"",stroke:"rgba(231,252,255,.96)",strokeWidth:16,strokeLineCap:"round",shadow:new Shadow({color:"#159deaaa",blur:18})}));
-      const frame = new Group(corners,{left:360,top:360,originX:"center",originY:"center"});
+      const frame = new Group(corners,{left:canvas.getWidth()/2,top:canvas.getHeight()/2,originX:"center",originY:"center"});
       canvas.add(frame); canvas.setActiveObject(frame); canvas.requestRenderAll(); syncSelection(frame); return;
     }
     const stroke = kind === "gradient"
@@ -163,19 +168,19 @@ export default function AeroStudio() {
         { offset: 0, color: "#ffffff" }, { offset: .35, color: "#57ccff" }, { offset: .7, color: "#b373ff" }, { offset: 1, color: "#ffffff" },
       ]}) : kind === "water" ? "rgba(73,208,247,.78)" : kind === "chrome" ? "#f6fdff" : kind === "glass" ? "rgba(220,248,255,.88)" : "#56bdf2";
     const frame = new Rect({
-      left: 360, top: 360, originX: "center", originY: "center", width: 620, height: 620,
-      fill: "rgba(255,255,255,.03)", stroke, strokeWidth: borderWidth, rx: kind === "rounded" ? radius : 24,
+      left: canvas.getWidth()/2, top: canvas.getHeight()/2, originX: "center", originY: "center", width: Math.min(canvas.getWidth(),canvas.getHeight())*.86, height: Math.min(canvas.getWidth(),canvas.getHeight())*.86,
+      fill: "rgba(255,255,255,.03)", stroke, strokeWidth: 12, rx: kind === "rounded" ? radius : 24,
       ry: kind === "rounded" ? radius : 24, shadow: new Shadow({ color: kind === "chrome" ? "rgba(255,255,255,.9)" : "rgba(0,78,150,.36)", blur: kind === "chrome" ? 9 : 22, offsetY: 8 }),
     });
     if (kind === "water") {
       frame.set({left:0,top:0});
       const drops = [[-270,-270,10],[270,-260,15],[-280,270,14],[276,272,9]].map(([left,top,r])=>new Circle({left,top,radius:r,originX:"center",originY:"center",fill:"rgba(195,248,255,.72)",stroke:"#fff",strokeWidth:2}));
-      const group = new Group([frame,...drops],{left:360,top:360,originX:"center",originY:"center"});
+      const group = new Group([frame,...drops],{left:canvas.getWidth()/2,top:canvas.getHeight()/2,originX:"center",originY:"center"});
       canvas.add(group); canvas.setActiveObject(group); canvas.requestRenderAll(); syncSelection(group);
     } else {
       canvas.add(frame); canvas.setActiveObject(frame); canvas.requestRenderAll(); syncSelection(frame);
     }
-  }, [borderWidth, radius]);
+  }, [radius]);
 
   const applyImageEffect = async (kind: "dream" | "clean" | "aqua" | "soft") => {
     if (!selected || selected.type !== "image") return;
@@ -199,7 +204,7 @@ export default function AeroStudio() {
         pearl:[["#ffffff",0],["#dff8ff",.45],["#f5fbff",.72],["#bde9ed",1]],
         aqua:[["#078ee0",0],["#48d8f1",.5],["#d6ffff",1]],
       } as const;
-      canvas.set({backgroundColor:new Gradient({type:"linear",gradientUnits:"pixels",coords:{x1:0,y1:0,x2:0,y2:720},colorStops:palettes[kind].map(([color,offset])=>({color,offset}))})});
+      canvas.set({backgroundColor:new Gradient({type:"linear",gradientUnits:"pixels",coords:{x1:0,y1:0,x2:0,y2:canvas.getHeight()},colorStops:palettes[kind].map(([color,offset])=>({color,offset}))})});
     }
     canvas.requestRenderAll();
   };
@@ -211,15 +216,49 @@ export default function AeroStudio() {
     const { FabricImage } = await import("fabric");
     const url = URL.createObjectURL(file);
     const img = await FabricImage.fromURL(url);
-    const scale = Math.min(620 / (img.width || 1), 620 / (img.height || 1));
-    img.set({ left: 360, top: 360, originX: "center", originY: "center", scaleX: scale, scaleY: scale });
+    const scale = Math.min(canvas.getWidth()*.86 / (img.width || 1), canvas.getHeight()*.86 / (img.height || 1));
+    img.set({ left: canvas.getWidth()/2, top: canvas.getHeight()/2, originX: "center", originY: "center", scaleX: scale, scaleY: scale });
     canvas.add(img); canvas.sendObjectToBack(img); canvas.setActiveObject(img); canvas.requestRenderAll();
-    setHasImage(true); setImageName(file.name.replace(/\.[^.]+$/, "")); syncSelection(img); URL.revokeObjectURL(url);
+    setHasImage(true); syncSelection(img); URL.revokeObjectURL(url);
   };
 
   const updateSelected = (changes: Record<string, unknown>) => {
     if (!selected) return;
     selected.set(changes); selected.setCoords(); fabricRef.current?.requestRenderAll();
+  };
+  const applyShadow = async (value: number) => {
+    setShadowAmount(value);
+    if (!selected) return;
+    const { Shadow } = await import("fabric");
+    selected.set({shadow:value === 0 ? null : new Shadow({color:"rgba(0,55,90,.48)",blur:value,offsetX:Math.round(value*.28),offsetY:Math.round(value*.35)})});
+    fabricRef.current?.requestRenderAll();
+  };
+  const applyEdgeFade = (value: number) => {
+    setEdgeFade(value);
+    if (!selected || selected.type !== "image") return;
+    const image = selected as unknown as {
+      getElement: () => CanvasImageSource & { width?: number; height?: number };
+      setElement: (element: HTMLCanvasElement | CanvasImageSource) => void;
+      __edgeSource?: CanvasImageSource & { width?: number; height?: number };
+    };
+    if (!image.__edgeSource) image.__edgeSource = image.getElement();
+    if (value === 0) {
+      image.setElement(image.__edgeSource); fabricRef.current?.requestRenderAll(); return;
+    }
+    const source = image.__edgeSource;
+    const width = Number(source.width || 1), height = Number(source.height || 1);
+    const offscreen = document.createElement("canvas"); offscreen.width = width; offscreen.height = height;
+    const context = offscreen.getContext("2d", {willReadFrequently:true}); if (!context) return;
+    context.drawImage(source,0,0,width,height);
+    const pixels = context.getImageData(0,0,width,height);
+    const fadeDistance = Math.max(1,Math.min(width,height)*(value/100)*.28);
+    for (let y=0;y<height;y++) for (let x=0;x<width;x++) {
+      const distance = Math.min(x,y,width-1-x,height-1-y);
+      const t = Math.max(0,Math.min(1,distance/fadeDistance));
+      const smooth = t*t*(3-2*t);
+      pixels.data[(y*width+x)*4+3] *= smooth;
+    }
+    context.putImageData(pixels,0,0); image.setElement(offscreen); fabricRef.current?.requestRenderAll();
   };
   const removeSelected = () => {
     if (selected) { fabricRef.current?.remove(selected); fabricRef.current?.requestRenderAll(); setSelected(null); }
@@ -228,8 +267,8 @@ export default function AeroStudio() {
     const canvas = fabricRef.current; if (!canvas) return;
     canvas.discardActiveObject(); canvas.requestRenderAll();
     const link = document.createElement("a");
-    link.download = `${imageName || "aero-decoration"}.png`;
-    link.href = canvas.toDataURL({ format: "png", multiplier: 1.5 });
+    link.download = "aero-decoration.png";
+    link.href = canvas.toDataURL({ format: "png", multiplier: 1 });
     link.click();
   };
   const clearCanvas = () => { fabricRef.current?.clear(); fabricRef.current?.set({ backgroundColor: "rgba(255,255,255,0)" }); setHasImage(false); setSelected(null); };
@@ -249,13 +288,28 @@ export default function AeroStudio() {
         <h1>Aero Decoration<br/><span>Studio</span></h1>
         <p className="subtitle">{tr("Bring your photos to life with crystal frames,", "用水晶边框与梦幻装饰唤醒你的照片，")}<br/>{tr("dreamy details and a touch of 2009 magic.", "重现 2009 年的数字魔法。")}</p>
         <div className="home-actions">
-          <GlassButton primary onClick={() => setScreen("editor")}><WandSparkles size={18}/> {tr("Create Decoration", "开始创作")}</GlassButton>
+          <GlassButton primary onClick={() => setShowNewDialog(true)}><WandSparkles size={18}/> {tr("Create Decoration", "开始创作")}</GlassButton>
           <GlassButton onClick={() => { setScreen("editor"); setTimeout(() => fileInput.current?.click(), 500); }}><Upload size={18}/> {tr("Upload Image", "上传图片")}</GlassButton>
         </div>
         <button className="gallery-link" onClick={() => setScreen("editor")}><FolderOpen size={17}/> {tr("Open My Gallery", "打开我的图库")} <span>›</span></button>
       </div>
       <footer className="window-status"><span className="online-dot"/> {tr("Ready to create", "准备就绪")} <span>Aero Studio v1.0</span></footer>
     </section>
+    {showNewDialog && <div className="dialog-backdrop">
+      <section className="new-canvas-dialog aero-window">
+        <header className="titlebar"><div className="app-gem"><Aperture size={17}/></div><span>{tr("New decoration","新建装饰")}</span><button className="dialog-close" onClick={()=>setShowNewDialog(false)}><X size={13}/></button></header>
+        <div className="new-dialog-body">
+          <h2>{tr("Choose canvas size","选择画布大小")}</h2>
+          <p>{tr("Start with a preset or enter a custom size.","选择常用尺寸，或输入自定义宽高。")}</p>
+          <div className="size-presets">
+            {[[1080,1080,"Square"],[1920,1080,"Landscape"],[1080,1920,"Portrait"],[1200,628,"Social"]].map(([w,h,label])=>
+              <button key={`${w}-${h}`} className={canvasWidth===w&&canvasHeight===h?"active":""} onClick={()=>{setCanvasWidth(Number(w));setCanvasHeight(Number(h))}}><i style={{aspectRatio:`${w}/${h}`}}/><b>{tr(String(label),label==="Square"?"方形":label==="Landscape"?"横向":label==="Portrait"?"纵向":"社交媒体")}</b><small>{w} × {h}</small></button>)}
+          </div>
+          <div className="custom-size"><label>{tr("Width","宽度")}<input type="number" min="128" max="4096" value={canvasWidth} onChange={e=>setCanvasWidth(Math.max(128,Math.min(4096,+e.target.value||128)))}/></label><span>×</span><label>{tr("Height","高度")}<input type="number" min="128" max="4096" value={canvasHeight} onChange={e=>setCanvasHeight(Math.max(128,Math.min(4096,+e.target.value||128)))}/></label><em>px</em></div>
+          <div className="dialog-actions"><GlassButton onClick={()=>setShowNewDialog(false)}>{tr("Cancel","取消")}</GlassButton><GlassButton primary onClick={()=>{setShowNewDialog(false);setScreen("editor")}}>{tr("Create canvas","创建画布")}</GlassButton></div>
+        </div>
+      </section>
+    </div>}
     <div className="taskbar"><button className="start-orb" aria-label={tr("Start","开始")}><i/><i/><i/><i/></button><div className="task-divider"/><button className="task-app"><Aperture size={22}/></button><div className="tray">⌃　🔊　📶　 <b>10:24<br/><small>7/26/2026</small></b></div></div>
   </main>;
 
@@ -266,9 +320,9 @@ export default function AeroStudio() {
         <button className="back-btn" onClick={() => setScreen("home")}><ArrowLeft size={17}/></button>
         <div className="app-gem"><Aperture size={18}/></div><span>Aero Decoration Studio</span><div className="editor-language"><button onClick={()=>setLang(lang==="en"?"zh":"en")}>{lang==="en"?"中文":"EN"}</button></div><WindowControls />
       </header>
-      <div className="menubar"><button>File <ChevronDown size={11}/></button><button>Edit <ChevronDown size={11}/></button><button>View <ChevronDown size={11}/></button><span/><button><Settings2 size={14}/> Preferences</button></div>
+      <div className="menubar"><button>{tr("File","文件")} <ChevronDown size={11}/></button><button>{tr("Edit","编辑")} <ChevronDown size={11}/></button><button>{tr("View","查看")} <ChevronDown size={11}/></button><span/><button><Settings2 size={14}/> {tr("Preferences","首选项")}</button></div>
       <div className="editor-topbar">
-        <div className="doc-title"><Aperture size={22}/><div><b>{imageName}</b><small>1080 × 1080 px · Transparent PNG</small></div></div>
+        <div className="doc-title"><Aperture size={22}/><div><b>{tr("Untitled Decoration","未命名装饰")}</b><small>{canvasWidth} × {canvasHeight} px · {tr("Transparent PNG","透明 PNG")}</small></div></div>
         <div className="history"><button title="Undo"><RotateCcw size={16}/></button><button title="Redo"><Redo2 size={16}/></button></div>
         <GlassButton onClick={() => fileInput.current?.click()}><ImagePlus size={16}/> {tr("Upload","上传")}</GlassButton>
         <GlassButton primary onClick={exportPNG}><Download size={16}/> {tr("Export PNG","导出 PNG")}</GlassButton>
@@ -282,53 +336,54 @@ export default function AeroStudio() {
             <button className={activeTab==="background"?"active":""} onClick={()=>setActiveTab("background")}><Cloud/>{tr("Background","背景")}</button>
           </div>
           <div className="asset-body">
-            <div className="panel-heading"><div><b>{activeTab === "frames" ? "Aero Frames" : activeTab === "decorations" ? "Decorations" : activeTab === "effects" ? "Photo Effects" : "Background"}</b><small>Click or drag onto the canvas</small></div><button><ChevronDown/></button></div>
+            <div className="panel-heading"><div><b>{activeTab === "frames" ? tr("Aero Frames","Aero 边框") : activeTab === "decorations" ? tr("Decorations","装饰素材") : activeTab === "effects" ? tr("Photo Effects","图片效果") : tr("Background","背景")}</b><small>{tr("Click or drag onto the canvas","点击或拖拽到画布")}</small></div><button><ChevronDown/></button></div>
             {activeTab === "frames" ? <div className="frame-list">
-              <button onClick={()=>addFrame("glass")}><span className="frame-sample glass"/><b>Crystal glass</b><small>Soft blue refraction</small></button>
-              <button onClick={()=>addFrame("rounded")}><span className="frame-sample rounded"/><b>Rounded clean</b><small>Adjustable corners</small></button>
-              <button onClick={()=>addFrame("gradient")}><span className="frame-sample rainbow"/><b>Rainbow light</b><small>Aero gradient edge</small></button>
-              <button onClick={()=>addFrame("water")}><span className="frame-sample water"/><b>Aqua drops</b><small>Glossy liquid corners</small></button>
-              <button onClick={()=>addFrame("chrome")}><span className="frame-sample chrome"/><b>Vista chrome</b><small>Bright media-player rim</small></button>
-              <button onClick={()=>addFrame("corners")}><span className="frame-sample corners"/><b>Crystal corners</b><small>Open clean composition</small></button>
+              <button onClick={()=>addFrame("glass")}><span className="frame-sample glass"/><b>{tr("Crystal glass","水晶玻璃")}</b><small>{tr("Soft blue refraction","柔和蓝色折射")}</small></button>
+              <button onClick={()=>addFrame("rounded")}><span className="frame-sample rounded"/><b>{tr("Rounded clean","清洁圆角")}</b><small>{tr("Adjustable corners","可调节圆角")}</small></button>
+              <button onClick={()=>addFrame("gradient")}><span className="frame-sample rainbow"/><b>{tr("Rainbow light","彩虹光线")}</b><small>{tr("Aero gradient edge","Aero 渐变边缘")}</small></button>
+              <button onClick={()=>addFrame("water")}><span className="frame-sample water"/><b>{tr("Aqua drops","水滴边框")}</b><small>{tr("Glossy liquid corners","透明液体角饰")}</small></button>
+              <button onClick={()=>addFrame("chrome")}><span className="frame-sample chrome"/><b>{tr("Vista chrome","Vista 金属")}</b><small>{tr("Bright media-player rim","播放器式高光边缘")}</small></button>
+              <button onClick={()=>addFrame("corners")}><span className="frame-sample corners"/><b>{tr("Crystal corners","水晶角饰")}</b><small>{tr("Open clean composition","开放式清洁构图")}</small></button>
               {assetManifest.frame.map(frame=><button className="image-asset-card" key={frame.id} onClick={()=>addImageFrame(frame.file)}><img src={frame.file} alt=""/><b>{frame.label}</b><small>{tr("Image frame","图片边框")}</small></button>)}
             </div> : activeTab === "effects" ? <div className="quick-effects">
-              <button onClick={()=>applyImageEffect("dream")}><i className="effect-preview dream"/>Dreamy bloom</button>
-              <button onClick={()=>applyImageEffect("clean")}><i className="effect-preview crisp"/>Clean vivid</button>
-              <button onClick={()=>applyImageEffect("aqua")}><i className="effect-preview aqua"/>Aqua shift</button>
-              <button onClick={()=>applyImageEffect("soft")}><i className="effect-preview soft"/>Pearl soft focus</button>
-              <p>Select an uploaded image to apply a nondestructive Aero color treatment.</p>
+              <button onClick={()=>applyImageEffect("dream")}><i className="effect-preview dream"/>{tr("Dreamy bloom","梦幻泛光")}</button>
+              <button onClick={()=>applyImageEffect("clean")}><i className="effect-preview crisp"/>{tr("Clean vivid","清洁鲜艳")}</button>
+              <button onClick={()=>applyImageEffect("aqua")}><i className="effect-preview aqua"/>{tr("Aqua shift","水蓝色调")}</button>
+              <button onClick={()=>applyImageEffect("soft")}><i className="effect-preview soft"/>{tr("Pearl soft focus","珍珠柔焦")}</button>
+              <p>{tr("Select an uploaded image to apply a nondestructive Aero color treatment.","选择已上传的图片，然后应用非破坏性的 Aero 色彩效果。")}</p>
             </div> : activeTab === "background" ? <div className="backgrounds">
-              <button onClick={()=>setCanvasBackground("transparent")}><i className="checker"/>Transparent</button>
-              <button onClick={()=>setCanvasBackground("sky")}><i className="sky"/>Sky horizon</button>
-              <button onClick={()=>setCanvasBackground("meadow")}><i className="green"/>Clean meadow</button>
-              <button onClick={()=>setCanvasBackground("pearl")}><i className="pearl"/>Pearl interior</button>
-              <button onClick={()=>setCanvasBackground("aqua")}><i className="aqua-bg"/>Underwater blue</button>
+              <button onClick={()=>setCanvasBackground("transparent")}><i className="checker"/>{tr("Transparent","透明")}</button>
+              <button onClick={()=>setCanvasBackground("sky")}><i className="sky"/>{tr("Sky horizon","天空地平线")}</button>
+              <button onClick={()=>setCanvasBackground("meadow")}><i className="green"/>{tr("Clean meadow","清洁草地")}</button>
+              <button onClick={()=>setCanvasBackground("pearl")}><i className="pearl"/>{tr("Pearl interior","珍珠空间")}</button>
+              <button onClick={()=>setCanvasBackground("aqua")}><i className="aqua-bg"/>{tr("Underwater blue","水下蓝色")}</button>
               {assetManifest.background.map(background=><button className="background-asset-card" key={background.id} onClick={()=>applyLibraryBackground(background.file)}><img src={background.file} alt=""/>{background.label}</button>)}
             </div> : <div className="sticker-grid">
               {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><img className="decor-image" src={s.file} alt=""/><small>{s.label}</small></button>)}
             </div>}
           </div>
         </aside>
-        <section className="canvas-area" onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>{e.preventDefault();const s=stickers.find(x=>x.id===e.dataTransfer.getData("sticker"));if(!s)return;const r=e.currentTarget.querySelector(".canvas-shell")?.getBoundingClientRect();if(r)addSticker(s,(e.clientX-r.left)*720/r.width,(e.clientY-r.top)*720/r.height);}}>
-          <div className="ruler horizontal">{[0,200,400,600,800,1000].map(n=><span key={n}>{n}</span>)}</div>
-          <div className="canvas-shell" style={{width:`min(64vh, ${zoom/100*720}px)`,height:`min(64vh, ${zoom/100*720}px)`}}>
-            {!hasImage && <div className="empty-canvas"><div><ImagePlus size={34}/></div><b>Drop your image here</b><span>PNG, JPG or WEBP</span><button onClick={()=>fileInput.current?.click()}>Browse files</button></div>}
+        <section className="canvas-area" onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>{e.preventDefault();const s=stickers.find(x=>x.id===e.dataTransfer.getData("sticker"));if(!s)return;const r=e.currentTarget.querySelector(".canvas-shell")?.getBoundingClientRect();if(r)addSticker(s,(e.clientX-r.left)*canvasWidth/r.width,(e.clientY-r.top)*canvasHeight/r.height);}}>
+          <div className="ruler horizontal">{[0,.2,.4,.6,.8,1].map(n=><span key={n}>{Math.round(canvasWidth*n)}</span>)}</div>
+          <div className="canvas-shell" style={{width:`min(62vw, ${zoom/100*Math.min(canvasWidth,900)}px)`,aspectRatio:`${canvasWidth}/${canvasHeight}`,maxHeight:"64vh"}}>
+            {!hasImage && <div className="empty-canvas"><div><ImagePlus size={34}/></div><b>{tr("Drop your image here","将图片拖放到这里")}</b><span>PNG、JPG {tr("or","或")} WEBP</span><button onClick={()=>fileInput.current?.click()}>{tr("Browse files","浏览文件")}</button></div>}
             <canvas ref={canvasElement}/>
           </div>
           <div className="canvas-bottom"><button onClick={()=>setZoom(Math.max(40,zoom-10))}>−</button><input type="range" min="40" max="100" value={zoom} onChange={e=>setZoom(+e.target.value)}/><button onClick={()=>setZoom(Math.min(100,zoom+10))}>+</button><span>{zoom}%</span></div>
         </section>
         <aside className="property-panel">
-          <div className="property-title"><b>Properties</b><MousePointer2 size={16}/></div>
-          <div className="selected-card"><span>{selected ? "✦" : "◌"}</span><div><b>{selected ? selected.type || "Decoration" : "Nothing selected"}</b><small>{selected ? "Canvas layer" : "Choose an object"}</small></div></div>
-          <div className="property-group"><label>Opacity <b>{opacity}%</b></label><input type="range" min="0" max="100" value={opacity} onChange={e=>{setOpacity(+e.target.value);updateSelected({opacity:+e.target.value/100})}}/></div>
-          <div className="property-group"><label>Rotation <b>{rotation}°</b></label><input type="range" min="-180" max="180" value={rotation} onChange={e=>{setRotation(+e.target.value);updateSelected({angle:+e.target.value})}}/></div>
-          <div className="property-group"><label>Border radius <b>{radius}px</b></label><input type="range" min="0" max="120" value={radius} onChange={e=>{setRadius(+e.target.value);updateSelected({rx:+e.target.value,ry:+e.target.value})}}/></div>
-          <div className="property-group"><label>Border width <b>{borderWidth}px</b></label><input type="range" min="2" max="40" value={borderWidth} onChange={e=>{setBorderWidth(+e.target.value);updateSelected({strokeWidth:+e.target.value})}}/></div>
-          <div className="layer-actions"><button onClick={()=>selected&&fabricRef.current?.bringObjectForward(selected)}><Plus/>Bring forward</button><button onClick={removeSelected}><Trash2/>Delete</button></div>
-          <div className="layers"><div><b>Layers</b><span>{fabricRef.current?.getObjects().length ?? 0}</span></div><button onClick={clearCanvas}><Trash2/> Clear canvas</button></div>
+          <div className="property-title"><b>{tr("Properties","属性")}</b><MousePointer2 size={16}/></div>
+          <div className="selected-card"><span>{selected ? "✦" : "◌"}</span><div><b>{selected ? tr("Selected object","已选对象") : tr("Nothing selected","未选择对象")}</b><small>{selected ? tr("Canvas layer","画布图层") : tr("Choose an object","请选择一个对象")}</small></div></div>
+          <div className="property-group"><label>{tr("Opacity","透明度")} <b>{opacity}%</b></label><input type="range" min="0" max="100" value={opacity} onChange={e=>{setOpacity(+e.target.value);updateSelected({opacity:+e.target.value/100})}}/></div>
+          <div className="property-group"><label>{tr("Rotation","旋转")} <b>{rotation}°</b></label><input type="range" min="-180" max="180" value={rotation} onChange={e=>{setRotation(+e.target.value);updateSelected({angle:+e.target.value})}}/></div>
+          <div className="property-group"><label>{tr("Border radius","圆角半径")} <b>{radius}px</b></label><input type="range" min="0" max="120" value={radius} onChange={e=>{setRadius(+e.target.value);updateSelected({rx:+e.target.value,ry:+e.target.value})}}/></div>
+          <div className="property-group"><label>{tr("Overlay shadow","叠加阴影")} <b>{shadowAmount}px</b></label><input type="range" min="0" max="50" value={shadowAmount} onChange={e=>applyShadow(+e.target.value)}/></div>
+          <div className="property-group"><label>{tr("Edge fade","边缘淡化")} <b>{edgeFade}%</b></label><input type="range" min="0" max="100" value={edgeFade} onChange={e=>applyEdgeFade(+e.target.value)}/><small className="property-hint">{tr("Available for image layers","适用于图片图层")}</small></div>
+          <div className="layer-actions"><button onClick={()=>selected&&fabricRef.current?.bringObjectForward(selected)}><Plus/>{tr("Bring forward","上移一层")}</button><button onClick={removeSelected}><Trash2/>{tr("Delete","删除")}</button></div>
+          <div className="layers"><div><b>{tr("Layers","图层")}</b><span>{fabricRef.current?.getObjects().length ?? 0}</span></div><button onClick={clearCanvas}><Trash2/> {tr("Clear canvas","清空画布")}</button></div>
         </aside>
       </div>
-      <footer className="editor-status"><span className="online-dot"/> All changes saved locally <span>Canvas: 1080 × 1080　|　RGBA　|　<samp>{fabricRef.current?.getObjects().length ?? 0} layers</samp></span></footer>
+      <footer className="editor-status"><span className="online-dot"/> {tr("All changes saved locally","所有更改均保存在本地")} <span>{tr("Canvas","画布")}: {canvasWidth} × {canvasHeight}　|　RGBA　|　<samp>{fabricRef.current?.getObjects().length ?? 0} {tr("layers","个图层")}</samp></span></footer>
     </section>
   </main>;
 }
