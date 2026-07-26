@@ -10,21 +10,34 @@ import {
 import type { Canvas as FabricCanvas, FabricObject } from "fabric";
 
 type ToolTab = "frames" | "decorations" | "effects" | "background";
-type Sticker = { id: string; label: string; family: "water" | "nature" | "crystal" | "aero" };
+type Sticker = { id: string; label: string; family: "water" | "nature" | "crystal" | "aero"; file: string };
 
 const stickers: Sticker[] = [
-  { id: "bubble-cluster", label: "Bubble cluster", family: "water" },
-  { id: "water-splash", label: "Water splash", family: "water" },
-  { id: "glass-orb", label: "Glass world", family: "crystal" },
-  { id: "lens-flare", label: "Crystal flare", family: "crystal" },
-  { id: "aqua-fish", label: "Aqua fish", family: "water" },
-  { id: "blue-butterfly", label: "Blue butterfly", family: "nature" },
-  { id: "clean-leaf", label: "Fresh leaves", family: "nature" },
-  { id: "daisy-sprig", label: "Daisy sprig", family: "nature" },
-  { id: "grass-corner", label: "Grass corner", family: "nature" },
-  { id: "aero-bow", label: "Aqua bow", family: "aero" },
-  { id: "cloud-puff", label: "Cloud puff", family: "aero" },
-  { id: "start-orb", label: "Vista orb", family: "aero" },
+  { id: "dolphin-splash", label: "Dolphin splash", family: "water", file: "dolphin-splash.png" },
+  { id: "rainbow-horizon", label: "Rainbow horizon", family: "aero", file: "rainbow-horizon.png" },
+  { id: "pearl-bubbles", label: "Pearl bubbles", family: "water", file: "pearl-bubbles.png" },
+  { id: "ocean-wave", label: "Ocean wave", family: "water", file: "ocean-wave.png" },
+  { id: "aquarium-orb", label: "Aquarium orb", family: "crystal", file: "aquarium-orb.png" },
+  { id: "aero-player", label: "Aero player", family: "aero", file: "aero-player.png" },
+  { id: "glass-mp3", label: "Glass MP3", family: "aero", file: "glass-mp3.png" },
+  { id: "music-bubbles", label: "Music bubbles", family: "crystal", file: "music-bubbles.png" },
+  { id: "crystal-disc", label: "Crystal disc", family: "aero", file: "crystal-disc.png" },
+  { id: "glass-gamepad", label: "Glass gamepad", family: "aero", file: "glass-gamepad.png" },
+  { id: "city-fishbowl", label: "City fishbowl", family: "crystal", file: "city-fishbowl.png" },
+  { id: "jumping-dolphin", label: "Jumping dolphin", family: "water", file: "jumping-dolphin.png" },
+  { id: "sky-porthole", label: "Sky porthole", family: "crystal", file: "sky-porthole.png" },
+  { id: "aqua-platform", label: "Aqua platform", family: "crystal", file: "aqua-platform.png" },
+  { id: "bubble-cloud", label: "Bubble cloud", family: "water", file: "bubble-cloud.png" },
+  { id: "garden-pod", label: "Garden pod", family: "nature", file: "garden-pod.png" },
+  { id: "fresh-sprout", label: "Fresh sprout", family: "nature", file: "fresh-sprout.png" },
+  { id: "green-globe", label: "Green globe", family: "nature", file: "green-globe.png" },
+  { id: "leaf-water-ribbon", label: "Leaf water", family: "nature", file: "leaf-water-ribbon.png" },
+  { id: "water-crescent", label: "Water crescent", family: "water", file: "water-crescent.png" },
+  { id: "blue-bubble-pack", label: "Blue bubbles", family: "water", file: "blue-bubble-pack.png" },
+  { id: "clean-city-meadow", label: "Clean city", family: "nature", file: "clean-city-meadow.png" },
+  { id: "sunflower-bouquet", label: "Sunflowers", family: "nature", file: "sunflower-bouquet.png" },
+  { id: "daisy-meadow", label: "Daisy meadow", family: "nature", file: "daisy-meadow.png" },
+  { id: "aero-laptop", label: "Aero laptop", family: "aero", file: "aero-laptop.png" },
 ];
 
 function GlassButton({ children, primary, className = "", onClick }: {
@@ -82,6 +95,17 @@ export default function AeroStudio() {
   const addSticker = useCallback(async (sticker: Sticker, x = 360, y = 360) => {
     const canvas = fabricRef.current;
     if (!canvas) return;
+    const { FabricImage } = await import("fabric");
+    const asset = await FabricImage.fromURL(`/decors/${sticker.file}`, { crossOrigin: "anonymous" });
+    const maxSize = 270;
+    const scale = Math.min(maxSize / (asset.width || 1), maxSize / (asset.height || 1), 1);
+    asset.set({
+      left: x, top: y, originX: "center", originY: "center",
+      scaleX: scale, scaleY: scale,
+    });
+    canvas.add(asset); canvas.setActiveObject(asset); canvas.requestRenderAll(); syncSelection(asset);
+    return;
+    /*
     const { Circle, Ellipse, Group, Gradient, Line, Path, Polygon, Rect, Shadow } = await import("fabric");
     const shine = new Gradient({ type: "radial", gradientUnits: "percentage", coords: { x1: .28, y1: .2, r1: 0, x2: .5, y2: .5, r2: .55 }, colorStops: [
       { offset: 0, color: "rgba(255,255,255,.98)" }, { offset: .18, color: "rgba(165,245,255,.8)" },
@@ -127,6 +151,7 @@ export default function AeroStudio() {
     }
     const item = new Group(parts, { left:x,top:y,originX:"center",originY:"center" });
     canvas.add(item); canvas.setActiveObject(item); canvas.requestRenderAll(); syncSelection(item);
+    */
   }, []);
 
   const addFrame = useCallback(async (kind: "glass" | "gradient" | "rounded" | "water" | "chrome" | "corners" = "glass") => {
@@ -282,7 +307,7 @@ export default function AeroStudio() {
               <button onClick={()=>setCanvasBackground("pearl")}><i className="pearl"/>Pearl interior</button>
               <button onClick={()=>setCanvasBackground("aqua")}><i className="aqua-bg"/>Underwater blue</button>
             </div> : <div className="sticker-grid">
-              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><span className={`decor-thumb ${s.id}`}><i/><i/><i/></span><small>{s.label}</small></button>)}
+              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><img className="decor-image" src={`/decors/${s.file}`} alt=""/><small>{s.label}</small></button>)}
             </div>}
           </div>
         </aside>
