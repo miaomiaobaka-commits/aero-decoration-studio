@@ -1,2 +1,2 @@
-allowBuilds:
-  canvas: true
+onlyBuiltDependencies:
+  - canvas
