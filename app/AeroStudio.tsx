@@ -10,21 +10,21 @@ import {
 import type { Canvas as FabricCanvas, FabricObject } from "fabric";
 
 type ToolTab = "frames" | "decorations" | "effects" | "background";
-type Sticker = { id: string; label: string; glyph: string; color: string };
+type Sticker = { id: string; label: string; family: "water" | "nature" | "crystal" | "aero" };
 
 const stickers: Sticker[] = [
-  { id: "droplet", label: "Water drop", glyph: "💧", color: "#48c7ff" },
-  { id: "shine", label: "Crystal shine", glyph: "✦", color: "#fff" },
-  { id: "rainbow", label: "Rainbow light", glyph: "🌈", color: "#ff85dc" },
-  { id: "bubble", label: "Bubble", glyph: "◯", color: "#b9f2ff" },
-  { id: "sparkle", label: "Sparkle", glyph: "✨", color: "#ffe681" },
-  { id: "cloud", label: "Cloud", glyph: "☁", color: "#fff" },
-  { id: "grass", label: "Grass", glyph: "🌱", color: "#52bd52" },
-  { id: "leaf", label: "Leaf", glyph: "🍃", color: "#61d56c" },
-  { id: "flower", label: "Flower", glyph: "🌼", color: "#ffd84a" },
-  { id: "folder", label: "Folder icon", glyph: "📁", color: "#ffd25b" },
-  { id: "start", label: "Start orb", glyph: "⊕", color: "#44c96b" },
-  { id: "button", label: "Window button", glyph: "▣", color: "#7edbff" },
+  { id: "bubble-cluster", label: "Bubble cluster", family: "water" },
+  { id: "water-splash", label: "Water splash", family: "water" },
+  { id: "glass-orb", label: "Glass world", family: "crystal" },
+  { id: "lens-flare", label: "Crystal flare", family: "crystal" },
+  { id: "aqua-fish", label: "Aqua fish", family: "water" },
+  { id: "blue-butterfly", label: "Blue butterfly", family: "nature" },
+  { id: "clean-leaf", label: "Fresh leaves", family: "nature" },
+  { id: "daisy-sprig", label: "Daisy sprig", family: "nature" },
+  { id: "grass-corner", label: "Grass corner", family: "nature" },
+  { id: "aero-bow", label: "Aqua bow", family: "aero" },
+  { id: "cloud-puff", label: "Cloud puff", family: "aero" },
+  { id: "start-orb", label: "Vista orb", family: "aero" },
 ];
 
 function GlassButton({ children, primary, className = "", onClick }: {
@@ -82,30 +82,108 @@ export default function AeroStudio() {
   const addSticker = useCallback(async (sticker: Sticker, x = 360, y = 360) => {
     const canvas = fabricRef.current;
     if (!canvas) return;
-    const { FabricText, Shadow } = await import("fabric");
-    const item = new FabricText(sticker.glyph, {
-      left: x, top: y, originX: "center", originY: "center", fontSize: 112,
-      fill: sticker.color, fontFamily: '"Segoe UI Emoji", "Segoe UI Symbol", sans-serif',
-      shadow: new Shadow({ color: "rgba(0,90,160,.35)", blur: 14, offsetY: 5 }),
-    });
+    const { Circle, Ellipse, Group, Gradient, Line, Path, Polygon, Rect, Shadow } = await import("fabric");
+    const shine = new Gradient({ type: "radial", gradientUnits: "percentage", coords: { x1: .28, y1: .2, r1: 0, x2: .5, y2: .5, r2: .55 }, colorStops: [
+      { offset: 0, color: "rgba(255,255,255,.98)" }, { offset: .18, color: "rgba(165,245,255,.8)" },
+      { offset: .62, color: "rgba(46,169,228,.3)" }, { offset: 1, color: "rgba(16,91,180,.12)" },
+    ]});
+    const shadow = new Shadow({ color: "rgba(0,82,145,.35)", blur: 15, offsetY: 7 });
+    let parts: FabricObject[] = [];
+    if (sticker.id === "bubble-cluster") {
+      parts = [[0,15,52],[-57,-18,29],[51,-39,23],[70,25,15],[-76,45,12]].map(([left,top,r]) =>
+        new Circle({ left, top, radius:r, originX:"center",originY:"center",fill:shine,stroke:"rgba(235,255,255,.9)",strokeWidth:3,shadow }));
+    } else if (sticker.id === "water-splash") {
+      parts = [
+        new Path("M -95 32 C -54 -5 -33 30 1 -9 C 31 -43 54 9 98 -23 C 74 31 43 54 -1 50 C -48 54 -72 46 -95 32 Z",{fill:"rgba(63,196,244,.58)",stroke:"#d6fbff",strokeWidth:3,shadow}),
+        ...[-65,-31,24,59].map((left,i)=>new Ellipse({left,top:-30-(i%2)*17,rx:8+i*2,ry:15+i*3,angle:i%2?-22:18,fill:shine,stroke:"#e8ffff",strokeWidth:2}))
+      ];
+    } else if (sticker.id === "glass-orb") {
+      parts = [new Circle({radius:86,originX:"center",originY:"center",fill:shine,stroke:"rgba(255,255,255,.95)",strokeWidth:4,shadow}),
+        new Ellipse({left:-22,top:-35,rx:30,ry:14,angle:-28,fill:"rgba(255,255,255,.58)",originX:"center",originY:"center"}),
+        new Path("M -58 28 Q -20 4 8 25 T 61 16 Q 36 62 -4 66 Q -37 61 -58 28 Z",{fill:"rgba(63,190,107,.72)",stroke:"#b8ffd0",strokeWidth:2})];
+    } else if (sticker.id === "lens-flare") {
+      parts = [new Circle({radius:58,originX:"center",originY:"center",fill:new Gradient({type:"radial",gradientUnits:"percentage",coords:{x1:.5,y1:.5,r1:0,x2:.5,y2:.5,r2:.5},colorStops:[{offset:0,color:"#fff"},{offset:.14,color:"#dfffff"},{offset:.42,color:"rgba(91,218,255,.45)"},{offset:.7,color:"rgba(255,125,230,.18)"},{offset:1,color:"rgba(255,255,255,0)"}]})}),
+        new Line([-105,0,105,0],{stroke:"rgba(255,255,255,.8)",strokeWidth:3}),new Line([0,-105,0,105],{stroke:"rgba(255,255,255,.8)",strokeWidth:3}),
+        new Polygon([{x:0,y:-82},{x:11,y:-11},{x:82,y:0},{x:11,y:11},{x:0,y:82},{x:-11,y:11},{x:-82,y:0},{x:-11,y:-11}],{fill:"rgba(255,255,255,.76)"})];
+    } else if (sticker.id === "aqua-fish") {
+      parts = [new Ellipse({rx:70,ry:37,originX:"center",originY:"center",fill:new Gradient({type:"linear",gradientUnits:"pixels",coords:{x1:0,y1:-35,x2:0,y2:35},colorStops:[{offset:0,color:"#fff17a"},{offset:.42,color:"#53d9e9"},{offset:1,color:"#0b72c4"}]}),stroke:"#eaffff",strokeWidth:3,shadow}),
+        new Polygon([{x:-61,y:0},{x:-105,y:-38},{x:-98,y:38}],{fill:"#21a6db",stroke:"#eaffff",strokeWidth:2}),new Circle({left:42,top:-9,radius:5,fill:"#08396b"}),new Circle({left:44,top:-11,radius:1.5,fill:"#fff"})];
+    } else if (sticker.id === "blue-butterfly") {
+      parts = [new Ellipse({left:-35,top:-18,rx:36,ry:48,angle:-28,fill:"rgba(68,186,255,.78)",stroke:"#dfffff",strokeWidth:3,shadow}),new Ellipse({left:35,top:-18,rx:36,ry:48,angle:28,fill:"rgba(92,120,255,.76)",stroke:"#dfffff",strokeWidth:3}),
+        new Ellipse({left:-25,top:36,rx:23,ry:32,angle:24,fill:"rgba(72,111,235,.8)",stroke:"#dfffff",strokeWidth:2}),new Ellipse({left:25,top:36,rx:23,ry:32,angle:-24,fill:"rgba(72,111,235,.8)",stroke:"#dfffff",strokeWidth:2}),new Ellipse({rx:6,ry:43,fill:"#15558e",originX:"center",originY:"center"})];
+    } else if (sticker.id === "clean-leaf") {
+      parts = [new Path("M -78 62 Q -26 -25 73 -73",{fill:"",stroke:"#4cad41",strokeWidth:7}),
+        ...[[-54,35,-28],[-22,5,-38],[14,-26,-36],[42,-50,-23],[-36,25,145],[-2,-6,142],[30,-35,145]].map(([left,top,angle],i)=>new Ellipse({left,top,rx:28-i%2*4,ry:12,angle,fill:i%2?"#84e267":"#4fc65b",stroke:"#d9ffd8",strokeWidth:2,shadow}))];
+    } else if (sticker.id === "daisy-sprig") {
+      parts = [new Line([0,60,0,-45],{stroke:"#50a942",strokeWidth:6}),...[0,45,90,135,180,225,270,315].map(angle=>new Ellipse({left:Math.cos(angle*Math.PI/180)*30,top:-60+Math.sin(angle*Math.PI/180)*30,rx:12,ry:26,angle:angle+90,fill:"#fff",stroke:"#ccecff",strokeWidth:2,originX:"center",originY:"center",shadow})),new Circle({left:0,top:-60,radius:17,fill:"#ffe04c",stroke:"#fff4aa",strokeWidth:3,originX:"center",originY:"center"})];
+    } else if (sticker.id === "grass-corner") {
+      parts = Array.from({length:13},(_,i)=>new Path(`M ${-95+i*15} 70 Q ${-105+i*15} ${15-(i%3)*18} ${-85+i*15} ${-40-(i%4)*12}`,{fill:"",stroke:i%2?"#74d648":"#3aaa3d",strokeWidth:7,shadow}));
+    } else if (sticker.id === "aero-bow") {
+      parts = [new Ellipse({left:-48,rx:46,ry:35,angle:-20,fill:"rgba(119,231,255,.72)",stroke:"#e8ffff",strokeWidth:4,shadow}),new Ellipse({left:48,rx:46,ry:35,angle:20,fill:"rgba(119,231,255,.72)",stroke:"#e8ffff",strokeWidth:4}),new Circle({radius:20,fill:shine,stroke:"#fff",strokeWidth:3,originX:"center",originY:"center"}),new Polygon([{x:-10,y:18},{x:-60,y:92},{x:-8,y:68}],{fill:"rgba(92,205,238,.7)",stroke:"#e8ffff",strokeWidth:3}),new Polygon([{x:10,y:18},{x:60,y:92},{x:8,y:68}],{fill:"rgba(92,205,238,.7)",stroke:"#e8ffff",strokeWidth:3})];
+    } else if (sticker.id === "cloud-puff") {
+      parts = [new Ellipse({rx:86,ry:38,top:18,fill:"rgba(255,255,255,.88)",stroke:"#d9f6ff",strokeWidth:3,shadow,originX:"center",originY:"center"}),new Circle({left:-44,top:-10,radius:42,fill:"rgba(255,255,255,.9)",stroke:"#d9f6ff",strokeWidth:3,originX:"center",originY:"center"}),new Circle({left:12,top:-28,radius:56,fill:"rgba(255,255,255,.9)",stroke:"#d9f6ff",strokeWidth:3,originX:"center",originY:"center"}),new Circle({left:59,top:1,radius:36,fill:"rgba(255,255,255,.9)",stroke:"#d9f6ff",strokeWidth:3,originX:"center",originY:"center"})];
+    } else {
+      parts = [new Circle({radius:78,originX:"center",originY:"center",fill:new Gradient({type:"radial",gradientUnits:"percentage",coords:{x1:.32,y1:.24,r1:0,x2:.5,y2:.5,r2:.52},colorStops:[{offset:0,color:"#fff"},{offset:.13,color:"#76ecff"},{offset:.48,color:"#138bd5"},{offset:.7,color:"#2ebd52"},{offset:1,color:"#07549d"}]}),stroke:"#efffff",strokeWidth:6,shadow}),new Rect({width:72,height:72,rx:12,ry:12,originX:"center",originY:"center",fill:"rgba(255,255,255,.24)",angle:45}),new Circle({radius:18,fill:"#fff",opacity:.75,originX:"center",originY:"center"})];
+    }
+    const item = new Group(parts, { left:x,top:y,originX:"center",originY:"center" });
     canvas.add(item); canvas.setActiveObject(item); canvas.requestRenderAll(); syncSelection(item);
   }, []);
 
-  const addFrame = useCallback(async (kind: "glass" | "gradient" | "rounded" = "glass") => {
+  const addFrame = useCallback(async (kind: "glass" | "gradient" | "rounded" | "water" | "chrome" | "corners" = "glass") => {
     const canvas = fabricRef.current;
     if (!canvas) return;
-    const { Rect, Shadow, Gradient } = await import("fabric");
+    const { Circle, Group, Path, Rect, Shadow, Gradient } = await import("fabric");
+    if (kind === "corners") {
+      const corners = [[-294,-294,0],[294,-294,90],[294,294,180],[-294,294,270]].map(([left,top,angle]) =>
+        new Path("M 0 92 L 0 24 Q 0 0 24 0 L 92 0",{left,top,angle,fill:"",stroke:"rgba(231,252,255,.96)",strokeWidth:16,strokeLineCap:"round",shadow:new Shadow({color:"#159deaaa",blur:18})}));
+      const frame = new Group(corners,{left:360,top:360,originX:"center",originY:"center"});
+      canvas.add(frame); canvas.setActiveObject(frame); canvas.requestRenderAll(); syncSelection(frame); return;
+    }
     const stroke = kind === "gradient"
       ? new Gradient({ type: "linear", gradientUnits: "pixels", coords: { x1: 0, y1: 0, x2: 640, y2: 640 }, colorStops: [
         { offset: 0, color: "#ffffff" }, { offset: .35, color: "#57ccff" }, { offset: .7, color: "#b373ff" }, { offset: 1, color: "#ffffff" },
-      ]}) : kind === "glass" ? "rgba(220,248,255,.88)" : "#56bdf2";
+      ]}) : kind === "water" ? "rgba(73,208,247,.78)" : kind === "chrome" ? "#f6fdff" : kind === "glass" ? "rgba(220,248,255,.88)" : "#56bdf2";
     const frame = new Rect({
       left: 360, top: 360, originX: "center", originY: "center", width: 620, height: 620,
       fill: "rgba(255,255,255,.03)", stroke, strokeWidth: borderWidth, rx: kind === "rounded" ? radius : 24,
-      ry: kind === "rounded" ? radius : 24, shadow: new Shadow({ color: "rgba(0,78,150,.36)", blur: 22, offsetY: 8 }),
+      ry: kind === "rounded" ? radius : 24, shadow: new Shadow({ color: kind === "chrome" ? "rgba(255,255,255,.9)" : "rgba(0,78,150,.36)", blur: kind === "chrome" ? 9 : 22, offsetY: 8 }),
     });
-    canvas.add(frame); canvas.setActiveObject(frame); canvas.requestRenderAll(); syncSelection(frame);
+    if (kind === "water") {
+      frame.set({left:0,top:0});
+      const drops = [[-270,-270,10],[270,-260,15],[-280,270,14],[276,272,9]].map(([left,top,r])=>new Circle({left,top,radius:r,originX:"center",originY:"center",fill:"rgba(195,248,255,.72)",stroke:"#fff",strokeWidth:2}));
+      const group = new Group([frame,...drops],{left:360,top:360,originX:"center",originY:"center"});
+      canvas.add(group); canvas.setActiveObject(group); canvas.requestRenderAll(); syncSelection(group);
+    } else {
+      canvas.add(frame); canvas.setActiveObject(frame); canvas.requestRenderAll(); syncSelection(frame);
+    }
   }, [borderWidth, radius]);
+
+  const applyImageEffect = async (kind: "dream" | "clean" | "aqua" | "soft") => {
+    if (!selected || selected.type !== "image") return;
+    const { filters } = await import("fabric");
+    const image = selected as FabricObject & { filters: unknown[]; applyFilters: () => void };
+    if (kind === "dream") image.filters = [new filters.Brightness({brightness:.08}),new filters.Saturation({saturation:.28}),new filters.Blur({blur:.035})];
+    if (kind === "clean") image.filters = [new filters.Brightness({brightness:.05}),new filters.Contrast({contrast:.12}),new filters.Saturation({saturation:.18})];
+    if (kind === "aqua") image.filters = [new filters.HueRotation({rotation:.49}),new filters.Saturation({saturation:.2}),new filters.Brightness({brightness:.06})];
+    if (kind === "soft") image.filters = [new filters.Blur({blur:.08}),new filters.Brightness({brightness:.12})];
+    image.applyFilters(); fabricRef.current?.requestRenderAll();
+  };
+
+  const setCanvasBackground = async (kind: "transparent" | "sky" | "meadow" | "pearl" | "aqua") => {
+    const canvas = fabricRef.current; if (!canvas) return;
+    if (kind === "transparent") canvas.set({backgroundColor:"rgba(255,255,255,0)"});
+    else {
+      const { Gradient } = await import("fabric");
+      const palettes = {
+        sky:[["#6fd6ff",0],["#eefcff",.58],["#b4ed77",1]],
+        meadow:[["#36bdf1",0],["#dffbff",.5],["#78d744",.72],["#289d3e",1]],
+        pearl:[["#ffffff",0],["#dff8ff",.45],["#f5fbff",.72],["#bde9ed",1]],
+        aqua:[["#078ee0",0],["#48d8f1",.5],["#d6ffff",1]],
+      } as const;
+      canvas.set({backgroundColor:new Gradient({type:"linear",gradientUnits:"pixels",coords:{x1:0,y1:0,x2:0,y2:720},colorStops:palettes[kind].map(([color,offset])=>({color,offset}))})});
+    }
+    canvas.requestRenderAll();
+  };
 
   const handleUpload = async (file?: File) => {
     if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) return;
@@ -188,15 +266,23 @@ export default function AeroStudio() {
               <button onClick={()=>addFrame("glass")}><span className="frame-sample glass"/><b>Crystal glass</b><small>Soft blue refraction</small></button>
               <button onClick={()=>addFrame("rounded")}><span className="frame-sample rounded"/><b>Rounded clean</b><small>Adjustable corners</small></button>
               <button onClick={()=>addFrame("gradient")}><span className="frame-sample rainbow"/><b>Rainbow light</b><small>Aero gradient edge</small></button>
+              <button onClick={()=>addFrame("water")}><span className="frame-sample water"/><b>Aqua drops</b><small>Glossy liquid corners</small></button>
+              <button onClick={()=>addFrame("chrome")}><span className="frame-sample chrome"/><b>Vista chrome</b><small>Bright media-player rim</small></button>
+              <button onClick={()=>addFrame("corners")}><span className="frame-sample corners"/><b>Crystal corners</b><small>Open clean composition</small></button>
             </div> : activeTab === "effects" ? <div className="quick-effects">
-              <button onClick={()=>updateSelected({opacity:.82})}>Dreamy fade</button><button onClick={()=>updateSelected({shadow:"0 8px 24px rgba(0,90,180,.4)"})}>Aero glow</button>
-              <p>Select an object, then apply a soft browser-canvas effect.</p>
+              <button onClick={()=>applyImageEffect("dream")}><i className="effect-preview dream"/>Dreamy bloom</button>
+              <button onClick={()=>applyImageEffect("clean")}><i className="effect-preview crisp"/>Clean vivid</button>
+              <button onClick={()=>applyImageEffect("aqua")}><i className="effect-preview aqua"/>Aqua shift</button>
+              <button onClick={()=>applyImageEffect("soft")}><i className="effect-preview soft"/>Pearl soft focus</button>
+              <p>Select an uploaded image to apply a nondestructive Aero color treatment.</p>
             </div> : activeTab === "background" ? <div className="backgrounds">
-              <button onClick={()=>fabricRef.current?.set({backgroundColor:"rgba(255,255,255,0)"})}><i className="checker"/>Transparent</button>
-              <button onClick={()=>{fabricRef.current?.set({backgroundColor:"#dff8ff"});fabricRef.current?.requestRenderAll();}}><i className="sky"/>Sky blue</button>
-              <button onClick={()=>{fabricRef.current?.set({backgroundColor:"#efffe8"});fabricRef.current?.requestRenderAll();}}><i className="green"/>Clean green</button>
+              <button onClick={()=>setCanvasBackground("transparent")}><i className="checker"/>Transparent</button>
+              <button onClick={()=>setCanvasBackground("sky")}><i className="sky"/>Sky horizon</button>
+              <button onClick={()=>setCanvasBackground("meadow")}><i className="green"/>Clean meadow</button>
+              <button onClick={()=>setCanvasBackground("pearl")}><i className="pearl"/>Pearl interior</button>
+              <button onClick={()=>setCanvasBackground("aqua")}><i className="aqua-bg"/>Underwater blue</button>
             </div> : <div className="sticker-grid">
-              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><span>{s.glyph}</span><small>{s.label}</small></button>)}
+              {stickers.map((s)=><button key={s.id} draggable onDragStart={(e)=>e.dataTransfer.setData("sticker",s.id)} onClick={()=>addSticker(s)}><span className={`decor-thumb ${s.id}`}><i/><i/><i/></span><small>{s.label}</small></button>)}
             </div>}
           </div>
         </aside>
