@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Aperture, ArrowLeft, ChevronDown, Cloud, Download, Droplets, Flower2,
+  Aperture, ArrowDown, ArrowLeft, ChevronDown, Cloud, Copy, Download, Droplets, Flower2,
   FolderOpen, ImagePlus, Layers3, Leaf, Maximize2, Minus, MousePointer2,
   Plus, Redo2, RotateCcw, Save, Settings2, Sparkles, Trash2, Upload,
   WandSparkles, X,
@@ -263,6 +263,27 @@ export default function AeroStudio() {
   const removeSelected = () => {
     if (selected) { fabricRef.current?.remove(selected); fabricRef.current?.requestRenderAll(); setSelected(null); }
   };
+  const moveSelectedBackward = () => {
+    const canvas = fabricRef.current;
+    if (!canvas || !selected) return;
+    canvas.sendObjectBackwards(selected);
+    canvas.setActiveObject(selected);
+    canvas.requestRenderAll();
+  };
+  const duplicateSelected = async () => {
+    const canvas = fabricRef.current;
+    if (!canvas || !selected) return;
+    const duplicate = await selected.clone();
+    duplicate.set({
+      left: (selected.left ?? 0) + 24,
+      top: (selected.top ?? 0) + 24,
+    });
+    duplicate.setCoords();
+    canvas.add(duplicate);
+    canvas.setActiveObject(duplicate);
+    syncSelection(duplicate);
+    canvas.requestRenderAll();
+  };
   const exportPNG = () => {
     const canvas = fabricRef.current; if (!canvas) return;
     canvas.discardActiveObject(); canvas.requestRenderAll();
@@ -379,7 +400,12 @@ export default function AeroStudio() {
           <div className="property-group"><label>{tr("Border radius","圆角半径")} <b>{radius}px</b></label><input type="range" min="0" max="120" value={radius} onChange={e=>{setRadius(+e.target.value);updateSelected({rx:+e.target.value,ry:+e.target.value})}}/></div>
           <div className="property-group"><label>{tr("Overlay shadow","叠加阴影")} <b>{shadowAmount}px</b></label><input type="range" min="0" max="50" value={shadowAmount} onChange={e=>applyShadow(+e.target.value)}/></div>
           <div className="property-group"><label>{tr("Edge fade","边缘淡化")} <b>{edgeFade}%</b></label><input type="range" min="0" max="100" value={edgeFade} onChange={e=>applyEdgeFade(+e.target.value)}/><small className="property-hint">{tr("Available for image layers","适用于图片图层")}</small></div>
-          <div className="layer-actions"><button onClick={()=>selected&&fabricRef.current?.bringObjectForward(selected)}><Plus/>{tr("Bring forward","上移一层")}</button><button onClick={removeSelected}><Trash2/>{tr("Delete","删除")}</button></div>
+          <div className="layer-actions">
+            <button disabled={!selected} onClick={()=>selected&&fabricRef.current?.bringObjectForward(selected)}><Plus/>{tr("Bring forward","上移一层")}</button>
+            <button disabled={!selected} onClick={moveSelectedBackward}><ArrowDown/>{tr("Move backward","下移一层")}</button>
+            <button disabled={!selected} onClick={duplicateSelected}><Copy/>{tr("Duplicate","复制")}</button>
+            <button disabled={!selected} onClick={removeSelected}><Trash2/>{tr("Delete","删除")}</button>
+          </div>
           <div className="layers"><div><b>{tr("Layers","图层")}</b><span>{fabricRef.current?.getObjects().length ?? 0}</span></div><button onClick={clearCanvas}><Trash2/> {tr("Clear canvas","清空画布")}</button></div>
         </aside>
       </div>
