@@ -39,6 +39,7 @@ export default function AeroStudio() {
   const [edgeFade, setEdgeFade] = useState(0);
   const [zoom, setZoom] = useState(67);
   const [showNewDialog, setShowNewDialog] = useState(false);
+  const [showCopyrightNotice, setShowCopyrightNotice] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(1080);
   const [canvasHeight, setCanvasHeight] = useState(1080);
   const [hasImage, setHasImage] = useState(false);
@@ -327,7 +328,29 @@ export default function AeroStudio() {
               <button key={`${w}-${h}`} className={canvasWidth===w&&canvasHeight===h?"active":""} onClick={()=>{setCanvasWidth(Number(w));setCanvasHeight(Number(h))}}><i style={{aspectRatio:`${w}/${h}`}}/><b>{tr(String(label),label==="Square"?"方形":label==="Landscape"?"横向":label==="Portrait"?"纵向":"社交媒体")}</b><small>{w} × {h}</small></button>)}
           </div>
           <div className="custom-size"><label>{tr("Width","宽度")}<input type="number" min="128" max="4096" value={canvasWidth} onChange={e=>setCanvasWidth(Math.max(128,Math.min(4096,+e.target.value||128)))}/></label><span>×</span><label>{tr("Height","高度")}<input type="number" min="128" max="4096" value={canvasHeight} onChange={e=>setCanvasHeight(Math.max(128,Math.min(4096,+e.target.value||128)))}/></label><em>px</em></div>
-          <div className="dialog-actions"><GlassButton onClick={()=>setShowNewDialog(false)}>{tr("Cancel","取消")}</GlassButton><GlassButton primary onClick={()=>{setShowNewDialog(false);setScreen("editor")}}>{tr("Create canvas","创建画布")}</GlassButton></div>
+          <div className="dialog-actions"><GlassButton onClick={()=>setShowNewDialog(false)}>{tr("Cancel","取消")}</GlassButton><GlassButton primary onClick={()=>{setShowNewDialog(false);setShowCopyrightNotice(true)}}>{tr("Create canvas","创建画布")}</GlassButton></div>
+        </div>
+      </section>
+    </div>}
+    {showCopyrightNotice && <div className="dialog-backdrop copyright-backdrop">
+      <section className="copyright-dialog aero-window" role="dialog" aria-modal="true" aria-labelledby="copyright-title">
+        <header className="titlebar"><div className="app-gem"><Layers3 size={17}/></div><span id="copyright-title">{tr("Copyright Notice","素材版权声明")}</span></header>
+        <div className="copyright-body">
+          {lang === "zh" ? <>
+            <h2>素材版权声明</h2>
+            <p>本网站部分装饰素材来源于互联网公开平台（包括但不限于 Pinterest），部分图片可能经过二次创作、编辑或生成处理，仅用于个人学习、设计交流及非商业展示用途。</p>
+            <p>所有原始素材的版权归原作者及相关版权所有者所有，本网站不声明拥有任何第三方素材的版权。</p>
+            <p>本网站生成及展示的图片仅限个人使用，<strong>禁止用于任何商业活动，包括但不限于商品销售、广告宣传、商业推广、品牌使用、付费服务或其他盈利用途。</strong></p>
+          </> : <>
+            <h2>Copyright Notice</h2>
+            <p>Some decorative materials used on this website are collected from publicly available platforms (including but not limited to Pinterest). Some images may have been edited, transformed, or generated for personal creative purposes.</p>
+            <p>All original materials remain the property of their respective creators and copyright holders. This website does not claim ownership of any third-party materials.</p>
+            <p>The images generated and displayed on this website are for <strong>personal use, learning, creative exploration, and non-commercial purposes only.</strong></p>
+            <p><strong>Commercial use of generated images is strictly prohibited, including but not limited to product sales, advertising, marketing campaigns, brand promotion, paid services, or any other profit-making activities.</strong></p>
+          </>}
+          <div className="copyright-actions">
+            <GlassButton primary onClick={()=>{setShowCopyrightNotice(false);setScreen("editor")}}>{tr("I Have Read","已经阅读")}</GlassButton>
+          </div>
         </div>
       </section>
     </div>}
