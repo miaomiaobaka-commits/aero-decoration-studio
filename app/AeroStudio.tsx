@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Aperture, ArrowDown, ArrowLeft, ChevronDown, Cloud, Copy, Download, Droplets, Flower2,
-  FolderOpen, ImagePlus, Layers3, Leaf, Maximize2, Minus, MousePointer2,
-  Plus, Redo2, RotateCcw, Save, Settings2, Sparkles, Trash2, Upload,
+  Aperture, ArrowDown, ArrowLeft, ChevronDown, Cloud, Copy, Download,
+  FolderOpen, ImagePlus, Layers3, Maximize2, Minus, MousePointer2,
+  Plus, Redo2, RotateCcw, Settings2, Sparkles, Trash2, Upload,
   WandSparkles, X,
 } from "lucide-react";
 import type { Canvas as FabricCanvas, FabricObject } from "fabric";
@@ -43,6 +43,7 @@ export default function AeroStudio() {
   const [canvasWidth, setCanvasWidth] = useState(1080);
   const [canvasHeight, setCanvasHeight] = useState(1080);
   const [hasImage, setHasImage] = useState(false);
+  const [layerCount, setLayerCount] = useState(0);
   const canvasElement = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<FabricCanvas | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -59,6 +60,9 @@ export default function AeroStudio() {
       canvas.on("selection:updated", (e) => syncSelection(e.selected?.[0] ?? null));
       canvas.on("selection:cleared", () => setSelected(null));
       canvas.on("object:rotating", (e) => setRotation(Math.round(e.target?.angle ?? 0)));
+      const syncLayerCount = () => setLayerCount(canvas.getObjects().length);
+      canvas.on("object:added", syncLayerCount);
+      canvas.on("object:removed", syncLayerCount);
       fabricRef.current = canvas;
     });
     return () => { active = false; fabricRef.current?.dispose(); fabricRef.current = null; };
@@ -429,10 +433,10 @@ export default function AeroStudio() {
             <button disabled={!selected} onClick={duplicateSelected}><Copy/>{tr("Duplicate","复制")}</button>
             <button disabled={!selected} onClick={removeSelected}><Trash2/>{tr("Delete","删除")}</button>
           </div>
-          <div className="layers"><div><b>{tr("Layers","图层")}</b><span>{fabricRef.current?.getObjects().length ?? 0}</span></div><button onClick={clearCanvas}><Trash2/> {tr("Clear canvas","清空画布")}</button></div>
+          <div className="layers"><div><b>{tr("Layers","图层")}</b><span>{layerCount}</span></div><button onClick={clearCanvas}><Trash2/> {tr("Clear canvas","清空画布")}</button></div>
         </aside>
       </div>
-      <footer className="editor-status"><span className="online-dot"/> {tr("All changes saved locally","所有更改均保存在本地")} <span>{tr("Canvas","画布")}: {canvasWidth} × {canvasHeight}　|　RGBA　|　<samp>{fabricRef.current?.getObjects().length ?? 0} {tr("layers","个图层")}</samp></span></footer>
+      <footer className="editor-status"><span className="online-dot"/> {tr("All changes saved locally","所有更改均保存在本地")} <span>{tr("Canvas","画布")}: {canvasWidth} × {canvasHeight}　|　RGBA　|　<samp>{layerCount} {tr("layers","个图层")}</samp></span></footer>
     </section>
   </main>;
 }

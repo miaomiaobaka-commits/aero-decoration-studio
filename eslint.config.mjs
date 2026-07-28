@@ -11,8 +11,18 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "cf-dist/**",
+    "docs/**",
     "next-env.d.ts",
   ]),
+  {
+    files: ["app/AeroStudio.tsx"],
+    rules: {
+      // Fabric.js canvas objects are intentionally mutable. React state stores
+      // the selected object identity while Fabric owns its mutable properties.
+      "react-hooks/immutability": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
