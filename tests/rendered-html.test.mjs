@@ -32,7 +32,7 @@ test("server-renders the Aero Decoration Studio home screen", async () => {
   assert.match(html, /<title>Aero Decoration Studio<\/title>/i);
   assert.match(html, /WELCOME TO YOUR CREATIVE SPACE/);
   assert.match(html, /Create Decoration/);
-  assert.match(html, /Upload Image/);
+  assert.doesNotMatch(html, /Upload Image/);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/);
 });
 

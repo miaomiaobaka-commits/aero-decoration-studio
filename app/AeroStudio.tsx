@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Aperture, ArrowDown, ArrowLeft, ChevronDown, Cloud, Copy, Download,
   FolderOpen, ImagePlus, Layers3, Maximize2, Minus, MousePointer2,
-  Plus, Redo2, RotateCcw, Settings2, Sparkles, Trash2, Upload,
+  Plus, Redo2, RotateCcw, Settings2, Sparkles, Trash2,
   WandSparkles, X,
 } from "lucide-react";
 import type { Canvas as FabricCanvas, FabricObject } from "fabric";
@@ -315,7 +315,6 @@ export default function AeroStudio() {
         <p className="subtitle">{tr("Bring your photos to life with crystal frames,", "用水晶边框与梦幻装饰唤醒你的照片，")}<br/>{tr("dreamy details and a touch of 2009 magic.", "重现 2009 年的数字魔法。")}</p>
         <div className="home-actions">
           <GlassButton primary onClick={() => setShowNewDialog(true)}><WandSparkles size={18}/> {tr("Create Decoration", "开始创作")}</GlassButton>
-          <GlassButton onClick={() => { setScreen("editor"); setTimeout(() => fileInput.current?.click(), 500); }}><Upload size={18}/> {tr("Upload Image", "上传图片")}</GlassButton>
         </div>
         <button className="gallery-link" onClick={() => setScreen("editor")}><FolderOpen size={17}/> {tr("Open My Gallery", "打开我的图库")} <span>›</span></button>
       </div>
